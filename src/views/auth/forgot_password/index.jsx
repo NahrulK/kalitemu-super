@@ -1,13 +1,13 @@
-import { CheckOutlined, LoadingOutlined } from '@ant-design/icons';
-import { useDidMount, useDocumentTitle, useScrollTop } from 'hooks';
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { resetPassword } from 'redux/actions/authActions';
+import { CheckOutlined, LoadingOutlined } from "@ant-design/icons";
+import { useDidMount, useDocumentTitle, useScrollTop } from "hooks";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { resetPassword } from "redux/actions/authActions";
 
 const ForgotPassword = () => {
   const { authStatus, isAuthenticating } = useSelector((state) => ({
     isAuthenticating: state.app.isAuthenticating,
-    authStatus: state.app.authStatus
+    authStatus: state.app.authStatus,
   }));
   const dispatch = useDispatch();
   const didMount = useDidMount();
@@ -16,7 +16,7 @@ const ForgotPassword = () => {
   const [field, setField] = useState({});
 
   useScrollTop();
-  useDocumentTitle('Forgot Password | Lunetas-cam');
+  useDocumentTitle("Forgot Password | Getama Shop");
   useEffect(() => {
     if (didMount) {
       setForgotPWStatus(authStatus);
@@ -37,12 +37,16 @@ const ForgotPassword = () => {
   return (
     <div className="forgot_password">
       {forgotPWStatus.message && (
-        <h5 className={`text-center ${authStatus?.success ? 'toast-success' : 'toast-error'}`}>
+        <h5
+          className={`text-center ${
+            authStatus?.success ? "toast-success" : "toast-error"
+          }`}
+        >
           {authStatus.message}
         </h5>
       )}
       <h3>Forgot Your Password?</h3>
-      <p>Enter your email address and we will send you a password reset email.</p>
+      <p>Masukan emain untk melakukan reset password 🔑 .</p>
       <br />
       <input
         field="email"
@@ -54,7 +58,7 @@ const ForgotPassword = () => {
         placeholder="Enter your email"
         readOnly={isSendingForgotPWRequest || authStatus?.success}
         type="email"
-        style={{ width: '100%' }}
+        style={{ width: "100%" }}
       />
       <br />
       <br />
@@ -66,7 +70,9 @@ const ForgotPassword = () => {
       >
         {isSendingForgotPWRequest ? <LoadingOutlined /> : <CheckOutlined />}
         &nbsp;
-        {isSendingForgotPWRequest ? 'Sending Password Reset Email' : 'Send Password Reset Email'}
+        {isSendingForgotPWRequest
+          ? "Sending Password Reset Email"
+          : "Send Password Reset Email"}
       </button>
     </div>
   );

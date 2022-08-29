@@ -9,8 +9,11 @@ import {
   Pagination,
   Popover,
 } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { displayMoney } from "helpers/utils";
+import { db } from "services/firebase";
+import { ImageLoader } from "components/common";
+import moment from "moment";
 
 // Detail Source
 const data = [
@@ -63,19 +66,54 @@ const detailsColumns = [
 
 const Dashboard = () => {
   // Column
-  const [visible, setVisible] = useState(false);
+
   // Data Column
-
-  const hide = () => {
-    setVisible(false);
-  };
-
-  const handleVisibleChange = (newVisible) => {
-    setVisible(newVisible);
-  };
+  const [orders, setOrders] = useState([]);
 
   useDocumentTitle("Welcome | Admin Dashboard");
   useScrollTop();
+
+  const fetchOrders = async () => {
+    setOrders([]);
+
+    let nomer = 1;
+    const response = db.collection("orders");
+    const data = await response.get();
+    data.docs.map((item) => {
+      setOrders((oldArray, index) => [
+        ...oldArray,
+        {
+          key: nomer++,
+          name: item.data().shipping.fullname,
+          amount: displayMoney(Math.floor(item.data().amount / 100)),
+          date: new Date(item.data().createdDate * 1000).toLocaleString(),
+          address:
+            item.data().shipping.address +
+            "  tlp: " +
+            item.data().shipping.mobile.value +
+            " Email : " +
+            item.data().shipping.email,
+          status: [item.data().status],
+          detail: item.data().orderItem,
+          // no: nomer++,
+          // id: item.data().orderID,
+          // orderUserId: item.data().orderUserID,
+          // amount: displayMoney(Math.floor(item.data().amount / 100)),
+          // date: new Date(item.data().createdDate * 1000).toLocaleString(),
+          // detail: item.data().orderItem,
+          // number: item.data().shipping.mobile.value,
+        },
+
+        // console.log(item.data().shipping),
+      ]);
+    });
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  console.log(orders);
 
   const [detailSource, setDetailSource] = useState([
     {
@@ -105,6 +143,12 @@ const Dashboard = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
+    },
+    {
+      title: "Date Added",
+      dataIndex: "date",
+      key: "date",
+      sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
     },
     {
       title: "Address",
@@ -137,40 +181,58 @@ const Dashboard = () => {
       key: "5",
       title: "Detail",
       dataIndex: "detail",
-      render: () => (
-        <Popover
-          title="Detail"
-          placement="left"
-          content={
-            <div>
-              <Table columns={detailsColumns} dataSource={detailSource} />
+      render: (detail) => (
+        <div>
+          {detail.map(function (element, index) {
+            return (
+              <div className="basket-item">
+                <div className="basket-item-wrapper">
+                  <div className="basket-item-img-wrapper">
+                    <ImageLoader
+                      alt={element.name}
+                      className="basket-item-img"
+                      src={element.image}
+                    />
+                  </div>
+                  <div className="basket-item-details">
+                    <h4 className="underline basket-item-name">
+                      {element.name}
+                    </h4>
 
-              {/* <p>
-                <Image
-                  alt="genteng"
-                  width={100}
-                  src="https://firebasestorage.googleapis.com/v0/b/kalitemusuper.appspot.com/o/products%2F0tqU545lvhloQ2UusD49?alt=media&token=f978f740-be9e-4bdf-bfe1-394b7619f267"
-                />
-              </p>
-              <span>10.000</span>
-              <p>
-                <Image
-                  alt="genteng"
-                  width={100}
-                  src="https://firebasestorage.googleapis.com/v0/b/kalitemusuper.appspot.com/o/products%2F0tqU545lvhloQ2UusD49?alt=media&token=f978f740-be9e-4bdf-bfe1-394b7619f267"
-                />
-              </p>
-              <span>30.000</span>
-              <br />
-              <a onClick={hide}>Close</a> */}
-            </div>
-          }
-          trigger="click"
-          visible={visible}
-          onVisibleChange={handleVisibleChange}
-        >
-          <Button type="primary">Detail</Button>
-        </Popover>
+                    <div className="basket-item-specs">
+                      <div>
+                        <span className="spec-title">Quantity</span>
+                        <h5 className="my-0">{element.quantity}</h5>
+                      </div>
+                      <div>
+                        <span className="spec-title">Ukuran</span>
+                        <h5 className="my-0">{element.selectedSize} mm</h5>
+                      </div>
+                      <div>
+                        <span className="spec-title">Warna</span>
+                        <div
+                          style={{
+                            backgroundColor:
+                              element.selectedColor ||
+                              element.availableColors[0],
+                            width: "15px",
+                            height: "15px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="basket-item-price">
+                    <h4 className="my-0">
+                      {displayMoney(element.price * element.quantity)}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ),
     },
   ];
@@ -178,7 +240,13 @@ const Dashboard = () => {
   return (
     <div className="loader">
       <h2>Welcome to admin dashboard</h2>
-      <Table columns={columns} dataSource={data} />
+      <Table
+        columns={columns}
+        dataSource={orders}
+        pagination={{
+          defaultPageSize: 4,
+        }}
+      />
     </div>
   );
 };

@@ -1,12 +1,17 @@
-import { ArrowLeftOutlined, CheckOutlined } from "@ant-design/icons";
+import { Button, Modal, Space } from "antd";
+import {
+  ArrowLeftOutlined,
+  CheckOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { CHECKOUT_STEP_1 } from "constants/routes";
+import { ACCOUNT, CHECKOUT_STEP_1, CHECKOUT_STEP_2 } from "constants/routes";
 import { Form, Formik } from "formik";
 import { displayActionMessage, displayMoney } from "helpers/utils";
 import { useDocumentTitle, useScrollTop } from "hooks";
 import PropType from "prop-types";
-import React from "react";
-import { Redirect } from "react-router-dom";
+import React, { useState } from "react";
+import { Redirect, useHistory } from "react-router-dom";
 import * as Yup from "yup";
 import { StepTracker } from "../components";
 import withCheckout from "../hoc/withCheckout";
@@ -16,6 +21,10 @@ import Total from "./Total";
 // import { apiInstance } from "./../../../utils";
 import { apiInstance } from "utils";
 import firebase, { db } from "services/firebase";
+import { clearBasket } from "redux/actions/basketActions";
+import { useDispatch } from "react-redux";
+
+const { confirm } = Modal;
 
 const FormSchema = Yup.object().shape({
   name: Yup.string()
@@ -34,11 +43,34 @@ const FormSchema = Yup.object().shape({
 });
 
 const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
-  useDocumentTitle("Check Out Final Step | Lunetas-cam");
+  useDocumentTitle("Check Out Final Step | Getama Shop");
   useScrollTop();
 
   const stripe = useStripe();
   const elements = useElements();
+
+  const [disabled, setDisabled] = useState(true);
+  const [succeeded, setSucceeded] = useState(false);
+  const [processing, setProcessing] = useState("");
+  const dispatch = useDispatch();
+
+  // Modal
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const history = useHistory();
 
   console.log("shipping :");
   console.log(shipping);
@@ -67,6 +99,22 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
 
   const handleFormSubmit = async (evt) => {
     evt.preventDefault();
+    // setIsModalVisible(true);
+
+    confirm({
+      title: "PEMBERITAHUAN!!!",
+      icon: <ExclamationCircleOutlined />,
+      content:
+        "Untuk proses PENGIRIMAN BARANG, admin akan menghubungi anda secara manual melalui NOMOR atau EMAIL yang anda masukan.",
+      onOk() {
+        console.log("OK");
+      },
+
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+
     const cardElement = elements.getElement("card");
 
     apiInstance
@@ -112,7 +160,14 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
                       shipping: shipping,
                       status: paymentIntent.status,
                     });
-                    alert("Pembayaran Selesai");
+
+                    displayActionMessage("PEMBAYARAN BERHASIL!!!", "info");
+                    // <Redirect to={ACCOUNT} />;
+                    // history.push(ACCOUNT);
+                    dispatch(clearBasket());
+                    setTimeout(() => {
+                      document.location.reload();
+                    }, 3000);
                   } else {
                     console.log("tidak login");
                   }
@@ -163,20 +218,15 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
         <div className="checkout-shipping-action">
           <button
             className="button button-muted"
-            // onClick={() => onClickBack(values)}
+            onClick={() => <Redirect to={CHECKOUT_STEP_2} />}
             type="button"
           >
             <ArrowLeftOutlined />
             &nbsp; Go Back
           </button>
-          <button
-            className="button"
-            // disabled={false}
-            // onClick={submitForm}
-            type="submit"
-          >
+          <button className="button" disabled={processing} type="submit">
             <CheckOutlined />
-            &nbsp; Confirm
+            {processing ? <p>Processing</p> : " Confirm"}
           </button>
         </div>
       </form>

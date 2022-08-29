@@ -12,13 +12,13 @@ const UserOrdersTab = () => {
 
   const [orders, setOrders] = useState([]);
   let { userFav } = useState([]);
+  let nomer = 1;
 
   const dispatch = useDispatch();
 
   const fetchOrders = async () => {
     setOrders([]);
 
-    let nomer = 1;
     const response = db.collection("orders");
     const data = await response.get();
     data.docs.map((item) => {
@@ -60,7 +60,7 @@ const UserOrdersTab = () => {
   );
 
   console.log(userFav);
-  // console.log(firebase.auth.currentUser.uid === orders.orderUserId);
+  console.log(firebase.auth.currentUser.uid);
 
   const hide = () => {
     setVisible(false);
