@@ -19,10 +19,89 @@ import { setShippingDetails } from "redux/actions/checkoutActions";
 import * as Yup from "yup";
 import { StepTracker } from "../components";
 import withCheckout from "../hoc/withCheckout";
-import ShippingForm from "./ShippingForm";
+// import ShippingForm from "./ShippingForm";
 import ShippingTotal from "./ShippingTotal";
 import { useEffect } from "react";
+// Shipping form import
+import { CustomInput, CustomMobileInput } from "components/formik";
+import { Field, useFormikContext } from "formik";
+// Shipping form import
+// TreeSelect Import
+import { TreeSelect } from "antd";
 
+const treeData = [
+  {
+    title: "Lombok Timur",
+    value: "Lombok Timur",
+    children: [
+      {
+        title: "Terara",
+        value: "Terara",
+        children: [
+          {
+            title: "Jenggik - Rp.10.000",
+            value: 10000,
+          },
+          {
+            title: "Rarang - Rp.8.000",
+            value: 8000,
+          },
+        ],
+      },
+      {
+        title: "Sikur",
+        value: "Sikur",
+        children: [
+          {
+            title: "Paok Motong - Rp.12.000",
+            value: 12000,
+          },
+          {
+            title: "Kotaraja - Rp.9.000",
+            value: 9000,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Lombok Barat",
+    value: "Lombok Barat",
+    children: [
+      {
+        title: "Gerung",
+        value: "Gerung",
+        children: [
+          {
+            title: "Babussalam - Rp.50.000",
+            value: 50000,
+          },
+          {
+            title: "Banyu Urip - Rp.55.000",
+            value: 55000,
+          },
+        ],
+      },
+      {
+        title: "Kediri",
+        value: "Kediri",
+        children: [
+          {
+            title: "Banyumulek - Rp.60.000",
+            value: 60000,
+          },
+          {
+            title: "Dasan Baru - Rp.70.000",
+            value: 70000,
+          },
+        ],
+      },
+    ],
+  },
+];
+// TreeSelect
+
+// Modal const
 const { confirm } = Modal;
 
 const FormSchema = Yup.object().shape({
@@ -47,10 +126,24 @@ const FormSchema = Yup.object().shape({
 });
 
 const ShippingDetails = ({ profile, shipping, subtotal }) => {
-  useDocumentTitle("Check Out Step 2 | Lunetas-cam");
+  useDocumentTitle("Check Out Step 2 | Getama Shop");
   useScrollTop();
   const dispatch = useDispatch();
   const history = useHistory();
+
+  // Formik varibale
+  const values = useFormikContext();
+
+  // Ongkir Varibale
+  const [ongkir, setOngkir] = useState(undefined);
+
+  const onChange = (newOngkir) => {
+    setOngkir(newOngkir);
+  };
+
+  let finalTotal = subtotal + ongkir;
+
+  console.log(ongkir);
 
   // Modal
 
@@ -121,10 +214,117 @@ const ShippingDetails = ({ profile, shipping, subtotal }) => {
           >
             {() => (
               <Form>
-                <ShippingForm />
+                {/* SHIPPING FORM */}
+                {/* <ShippingForm /> */}
+                <div className="checkout-shipping-wrapper">
+                  <div className="checkout-shipping-form">
+                    <div className="checkout-fieldset">
+                      <div className="d-block checkout-field">
+                        <Field
+                          name="fullname"
+                          type="text"
+                          label="* Full Name"
+                          placeholder="Enter your full name"
+                          component={CustomInput}
+                          style={{ textTransform: "capitalize" }}
+                        />
+                      </div>
+                      <div className="d-block checkout-field">
+                        <Field
+                          name="email"
+                          type="email"
+                          label="* Email Address"
+                          placeholder="Enter your email address"
+                          component={CustomInput}
+                        />
+                      </div>
+                    </div>
+                    <div className="checkout-fieldset">
+                      <div className="d-block checkout-field">
+                        <Field
+                          name="address"
+                          type="text"
+                          label="* Delivery Address"
+                          placeholder="Enter full delivery address"
+                          component={CustomInput}
+                        />
+                      </div>
+                      <div className="d-block checkout-field">
+                        <CustomMobileInput
+                          name="mobile"
+                          defaultValue="087762804486"
+                        />
+                      </div>
+                    </div>
+                    <div className="checkout-fieldset">
+                      <Field name="isInternational">
+                        {({ field, form, meta }) => (
+                          <div className="checkout-field">
+                            {meta.touched && meta.error ? (
+                              <span className="label-input label-error">
+                                {meta.error}
+                              </span>
+                            ) : (
+                              // eslint-disable-next-line jsx-a11y/label-has-associated-control
+                              <label
+                                className="label-input"
+                                htmlFor={field.name}
+                              >
+                                Delivery Option
+                              </label>
+                            )}
+                            <div className="checkout-checkbox-field">
+                              {/* <input
+                                checked={field.value}
+                                id={field.name}
+                                onChange={(e) => {
+                                  form.setValues({
+                                    ...form.values,
+                                    [field.name]: e.target.checked,
+                                  });
+                                }}
+                                value={meta.value}
+                                type="checkbox"
+                              /> */}
+                              {/* <label
+                                className="d-flex w-100"
+                                htmlFor={field.name}
+                              >
+                                <h5 className="d-flex-grow-1 margin-0">
+                                  &nbsp; Ongkos Kirim &nbsp;
+                                  <span className="text-subtle">1-2 days</span>
+                                </h5>
+                                <h4 className="margin-0">Rp 10.000,00</h4>
+                              </label> */}
+                              <TreeSelect
+                                style={{
+                                  width: "100%",
+                                }}
+                                value={ongkir}
+                                dropdownStyle={{
+                                  maxHeight: 400,
+                                  overflow: "auto",
+                                }}
+                                treeData={treeData}
+                                placeholder="Please select"
+                                onChange={onChange}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Field>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SHIPPING FORM */}
                 <br />
                 {/*  ---- TOTAL --------- */}
-                <ShippingTotal subtotal={subtotal} />
+                <ShippingTotal
+                  finalTotal={finalTotal}
+                  ongkir={ongkir}
+                  subtotal={subtotal}
+                />
                 <br />
                 {/*  ----- NEXT/PREV BUTTONS --------- */}
                 <div className="checkout-shipping-action">

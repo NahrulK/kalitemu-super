@@ -3,7 +3,7 @@ import { displayMoney } from "helpers/utils";
 import PropType from "prop-types";
 import React from "react";
 
-const ShippingTotal = ({ subtotal }) => {
+const ShippingTotal = ({ finalTotal, ongkir, subtotal }) => {
   const { values } = useFormikContext();
 
   return (
@@ -18,7 +18,7 @@ const ShippingTotal = ({ subtotal }) => {
             </td>
             <td>
               <h4 className="basket-total-amount text-subtle text-right margin-0 ">
-                {values.isInternational ? "Rp. 10.000,00" : "Rp. 0,00"}
+                {displayMoney(Math.floor(Number(ongkir)))}
               </h4>
             </td>
           </tr>
@@ -42,11 +42,7 @@ const ShippingTotal = ({ subtotal }) => {
             </td>
             <td>
               <h2 className="basket-total-amount text-right">
-                {displayMoney(
-                  Math.floor(
-                    Number(subtotal) + (values.isInternational ? 10000 : 0)
-                  )
-                )}
+                {displayMoney(Math.floor(Number(finalTotal)))}
               </h2>
             </td>
           </tr>
