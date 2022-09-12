@@ -12,7 +12,7 @@ import { CHECKOUT_STEP_1, CHECKOUT_STEP_3 } from "constants/routes";
 import { Form, Formik } from "formik";
 import { useDocumentTitle, useScrollTop } from "hooks";
 import PropType from "prop-types";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { setShippingDetails } from "redux/actions/checkoutActions";
@@ -28,77 +28,78 @@ import { Field, useFormikContext } from "formik";
 // Shipping form import
 // TreeSelect Import
 import { TreeSelect } from "antd";
+import { AppContext } from "context/app-context";
 
-const treeData = [
-  {
-    title: "Lombok Timur",
-    value: "Lombok Timur",
-    children: [
-      {
-        title: "Terara",
-        value: "Terara",
-        children: [
-          {
-            title: "Jenggik - Rp.10.000",
-            value: 10000,
-          },
-          {
-            title: "Rarang - Rp.8.000",
-            value: 8000,
-          },
-        ],
-      },
-      {
-        title: "Sikur",
-        value: "Sikur",
-        children: [
-          {
-            title: "Paok Motong - Rp.12.000",
-            value: 12000,
-          },
-          {
-            title: "Kotaraja - Rp.9.000",
-            value: 9000,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Lombok Barat",
-    value: "Lombok Barat",
-    children: [
-      {
-        title: "Gerung",
-        value: "Gerung",
-        children: [
-          {
-            title: "Babussalam - Rp.50.000",
-            value: 50000,
-          },
-          {
-            title: "Banyu Urip - Rp.55.000",
-            value: 55000,
-          },
-        ],
-      },
-      {
-        title: "Kediri",
-        value: "Kediri",
-        children: [
-          {
-            title: "Banyumulek - Rp.60.000",
-            value: 60000,
-          },
-          {
-            title: "Dasan Baru - Rp.70.000",
-            value: 70000,
-          },
-        ],
-      },
-    ],
-  },
-];
+// const treeData = [
+//   {
+//     title: "Lombok Timur",
+//     value: "Lombok Timur",
+//     children: [
+//       {
+//         title: "Terara",
+//         value: "Terara",
+//         children: [
+//           {
+//             title: "Jenggik - Rp.10.000",
+//             value: 10000,
+//           },
+//           {
+//             title: "Rarang - Rp.8.000",
+//             value: 8000,
+//           },
+//         ],
+//       },
+//       {
+//         title: "Sikur",
+//         value: "Sikur",
+//         children: [
+//           {
+//             title: "Paok Motong - Rp.12.000",
+//             value: 12000,
+//           },
+//           {
+//             title: "Kotaraja - Rp.9.000",
+//             value: 9000,
+//           },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     title: "Lombok Barat",
+//     value: "Lombok Barat",
+//     children: [
+//       {
+//         title: "Gerung",
+//         value: "Gerung",
+//         children: [
+//           {
+//             title: "Babussalam - Rp.50.000",
+//             value: 50000,
+//           },
+//           {
+//             title: "Banyu Urip - Rp.55.000",
+//             value: 55000,
+//           },
+//         ],
+//       },
+//       {
+//         title: "Kediri",
+//         value: "Kediri",
+//         children: [
+//           {
+//             title: "Banyumulek - Rp.60.000",
+//             value: 60000,
+//           },
+//           {
+//             title: "Dasan Baru - Rp.70.000",
+//             value: 70000,
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ];
 // TreeSelect
 
 // Modal const
@@ -135,15 +136,17 @@ const ShippingDetails = ({ profile, shipping, subtotal }) => {
   const values = useFormikContext();
 
   // Ongkir Varibale
-  const [ongkir, setOngkir] = useState(undefined);
+
+  const context = useContext(AppContext);
+  console.log(context);
 
   const onChange = (newOngkir) => {
-    setOngkir(newOngkir);
+    context.setOngkir(newOngkir);
   };
 
-  let finalTotal = subtotal + ongkir;
+  let finalTotal = subtotal + context.ongkir;
 
-  console.log(ongkir);
+  // console.log(ongkir);
 
   // Modal
 
@@ -161,21 +164,21 @@ const ShippingDetails = ({ profile, shipping, subtotal }) => {
     setIsModalVisible(false);
   };
 
-  useEffect(() => {
-    confirm({
-      title: "PERHATIAN!!",
-      icon: <ExclamationCircleOutlined />,
-      content:
-        "Mohon isi NOMOR  dan EMAIL anda dengan benar dan menggunakan kontak yang pribadi yang bisa dihubungi karena akan digunakan sebagai sarana komunikasi selama proses PENGIRIMAN BARANG",
-      onOk() {
-        console.log("OK");
-      },
+  // useEffect(() => {
+  //   confirm({
+  //     title: "PERHATIAN!!",
+  //     icon: <ExclamationCircleOutlined />,
+  //     content:
+  //       "Mohon isi NOMOR  dan EMAIL anda dengan benar dan menggunakan kontak yang pribadi yang bisa dihubungi karena akan digunakan sebagai sarana komunikasi selama proses PENGIRIMAN BARANG",
+  //     onOk() {
+  //       console.log("OK");
+  //     },
 
-      onCancel() {
-        console.log("Cancel");
-      },
-    });
-  }, []);
+  //     onCancel() {
+  //       console.log("Cancel");
+  //     },
+  //   });
+  // }, []);
 
   const initFormikValues = {
     fullname: shipping.fullname || profile.fullname || "",
@@ -300,12 +303,12 @@ const ShippingDetails = ({ profile, shipping, subtotal }) => {
                                 style={{
                                   width: "100%",
                                 }}
-                                value={ongkir}
+                                value={context.ongkir}
                                 dropdownStyle={{
                                   maxHeight: 400,
                                   overflow: "auto",
                                 }}
-                                treeData={treeData}
+                                treeData={context.dataOngkir}
                                 placeholder="Please select"
                                 onChange={onChange}
                               />
@@ -322,7 +325,7 @@ const ShippingDetails = ({ profile, shipping, subtotal }) => {
                 {/*  ---- TOTAL --------- */}
                 <ShippingTotal
                   finalTotal={finalTotal}
-                  ongkir={ongkir}
+                  ongkir={context.ongkir}
                   subtotal={subtotal}
                 />
                 <br />
@@ -369,3 +372,4 @@ ShippingDetails.propTypes = {
 };
 
 export default withCheckout(ShippingDetails);
+// export { ongkir };

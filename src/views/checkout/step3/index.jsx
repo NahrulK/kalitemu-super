@@ -10,7 +10,7 @@ import { Form, Formik } from "formik";
 import { displayActionMessage, displayMoney } from "helpers/utils";
 import { useDocumentTitle, useScrollTop } from "hooks";
 import PropType from "prop-types";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 import * as Yup from "yup";
 import { StepTracker } from "../components";
@@ -23,6 +23,8 @@ import { apiInstance } from "utils";
 import firebase, { db } from "services/firebase";
 import { clearBasket } from "redux/actions/basketActions";
 import { useDispatch } from "react-redux";
+import { ongkir } from "../step2";
+import { AppContext } from "context/app-context";
 
 const { confirm } = Modal;
 
@@ -45,6 +47,8 @@ const FormSchema = Yup.object().shape({
 const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
   useDocumentTitle("Check Out Final Step | Getama Shop");
   useScrollTop();
+
+  const context = useContext(AppContext);
 
   const stripe = useStripe();
   const elements = useElements();
@@ -119,7 +123,7 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
 
     apiInstance
       .post("/checkout/step3", {
-        amount: Math.floor(subtotal + 10000) * 100,
+        amount: Math.floor(subtotal + context.ongkir) * 100,
         shipping: {
           name: shipping.fullname,
           address: {
@@ -211,7 +215,7 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
         <div className="basket-total text-right">
           <p className="basket-total-title">Total:</p>
           <h2 className="basket-total-amount">
-            {displayMoney(Math.floor(subtotal + 10000))}
+            {displayMoney(Math.floor(subtotal + context.ongkir))}
           </h2>
         </div>
         <br />
