@@ -86,6 +86,8 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
   console.log(basket);
   console.log("Auth :");
   console.log(auth);
+  // console.log("Total :");
+  // console.log(subtotal + context.ongkir);
 
   // const reBasket = basket.map((product, i) => {
   //   product;
@@ -162,8 +164,19 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
                       amount: paymentIntent.amount,
                       orderItem: basket,
                       shipping: shipping,
-                      status: paymentIntent.status,
+                      status: paymentIntent?.status,
                     });
+
+                    basket.map(function (element, index) {
+                      db.collection("products")
+                        .doc(element.id)
+                        .update({
+                          maxQuantity: element.maxQuantity - element.quantity,
+                        });
+                    });
+                    // db.collection("products")
+                    //   .doc(id)
+                    //   .update({ maxQuantity: maxQuantity });
 
                     displayActionMessage("PEMBAYARAN BERHASIL!!!", "info");
                     // <Redirect to={ACCOUNT} />;
