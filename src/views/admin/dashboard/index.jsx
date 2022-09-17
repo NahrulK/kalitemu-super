@@ -1,86 +1,60 @@
 import { useDocumentTitle, useScrollTop } from "hooks";
-import {
-  Button,
-  Image,
-  Radio,
-  Space,
-  Table,
-  Tag,
-  Pagination,
-  Popover,
-} from "antd";
+
 import React, { useEffect, useState } from "react";
 import { displayMoney } from "helpers/utils";
 import { db } from "services/firebase";
 import { ImageLoader } from "components/common";
 import moment from "moment";
 
-// Detail Source
-const data = [
-  {
-    key: "1",
-    name: "Nahrul Khayattullah",
-    amount: displayMoney(Math.floor(40000)),
-    address: "Bat kokok, terara.",
-    status: ["success"],
-  },
-  {
-    key: "2",
-    name: "Emha Asqolani",
-    amount: displayMoney(Math.floor(100000)),
-    address: "Karang sukun . rt03",
-    status: ["success"],
-  },
-  {
-    key: "3",
-    name: "Hery Rian",
-    amount: displayMoney(Math.floor(70000)),
-    address: "Selong No. 1 ",
-    status: ["success"],
-  },
-];
-
-const detailsColumns = [
-  {
-    key: "1",
-    title: "Images",
-    dataIndex: "image",
-    render: (images) => <Image alt="genteng" width={50} src={images} />,
-  },
-  {
-    key: "2",
-    title: "Product",
-    dataIndex: "product",
-  },
-  {
-    key: "3",
-    title: "Qty",
-    dataIndex: "qty",
-  },
-  {
-    key: "4",
-    title: "Price",
-    dataIndex: "price",
-  },
-];
+import {
+  Card,
+  Col,
+  Row,
+  Typography,
+  Tooltip,
+  Progress,
+  Upload,
+  message,
+  Button,
+  Timeline,
+  Radio,
+  Table,
+  Tag,
+} from "antd";
+import {
+  ToTopOutlined,
+  MenuUnfoldOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
+import Paragraph from "antd/lib/typography/Paragraph";
+import ReactApexChart from "react-apexcharts";
 
 const Dashboard = () => {
-  // Column
-
-  // Data Column
-  const [orders, setOrders] = useState([]);
-
-  useDocumentTitle("Welcome | Admin Dashboard");
+  useDocumentTitle("Admin Dashboard");
   useScrollTop();
+
+  const { Title, Text } = Typography;
+  const [orders, setOrders] = useState([]);
+  const [ordersDetail, setOrdersDetail] = useState([]);
+  const [orderLine, setOrdersLine] = useState([]);
+  const [orderLineY, setOrdersLineY] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [product, setProduct] = useState([]);
+  const [totalPembayaran, setTotalPembayaran] = useState(0);
 
   const fetchOrders = async () => {
     setOrders([]);
+    setUsers([]);
+    setProduct([]);
 
     let nomer = 1;
-    const response = db.collection("orders");
-    const data = await response.get();
-    data.docs.map((item) => {
-      setOrders((oldArray, index) => [
+    const ordersItem = db.collection("orders");
+    const usersItem = db.collection("users");
+    const productItem = db.collection("products");
+
+    const dataOrders = await ordersItem.get();
+    dataOrders.docs.map((item) => {
+      setOrdersDetail((oldArray, index) => [
         ...oldArray,
         {
           key: nomer++,
@@ -95,17 +69,32 @@ const Dashboard = () => {
             item.data().shipping.email,
           status: [item.data().status],
           detail: item.data().orderItem,
-          // no: nomer++,
-          // id: item.data().orderID,
-          // orderUserId: item.data().orderUserID,
-          // amount: displayMoney(Math.floor(item.data().amount / 100)),
-          // date: new Date(item.data().createdDate * 1000).toLocaleString(),
-          // detail: item.data().orderItem,
-          // number: item.data().shipping.mobile.value,
         },
-
-        // console.log(item.data().shipping),
       ]);
+
+      setOrders((oldArray, index) => [
+        ...oldArray,
+        {
+          name: item.data().shipping.fullname,
+          amount: item.data().amount,
+        },
+      ]);
+
+      setOrdersLine((oldArray, index) => [...oldArray, item.data().amount]);
+      setOrdersLineY((oldArray, index) => [
+        ...oldArray,
+        displayMoney(Math.floor(item.data().amount / 100)),
+      ]);
+    });
+
+    const dataProdutcs = await productItem.get();
+    dataProdutcs.docs.map((item) => {
+      setProduct((oldArray, index) => [...oldArray, item.data()]);
+    });
+
+    const dataUsers = await usersItem.get();
+    dataUsers.docs.map((item) => {
+      setUsers((oldArray, index) => [...oldArray, item.data()]);
     });
   };
 
@@ -113,24 +102,129 @@ const Dashboard = () => {
     fetchOrders();
   }, []);
 
-  console.log(orders);
+  // console.log("orders :");
+  // console.log(orderLine);
+  // console.log("users :");
+  // console.log(users);
+  // console.log("products :");
+  // console.log(product);
 
-  const [detailSource, setDetailSource] = useState([
+  //   var nums = ['100','300','400','60','40'];
+  var sum = 0;
+
+  for (var i = 0; i < orders.length; i++) {
+    sum += parseInt(orders[i].amount);
+  }
+
+  // console.log("products :");
+  // console.log(orderLineY);
+
+  const count = [
     {
-      image:
-        "https://firebasestorage.googleapis.com/v0/b/kalitemusuper.appspot.com/o/products%2F5BwF0FlP5r2THRro3EY8?alt=media&token=65c5ae44-afd5-49e3-8a1b-dad2c43203d2",
-      product: "Kalitemu Super",
-      qty: 6,
-      price: displayMoney(Math.floor(40000)),
+      today: "Total Semua Pemasukan",
+      title: displayMoney(Math.floor(sum / 100)),
+      persent: "+30%",
+      icon: "dollor",
+      bnb: "bnb2",
     },
     {
-      image:
-        "https://firebasestorage.googleapis.com/v0/b/kalitemusuper.appspot.com/o/products%2F0tqU545lvhloQ2UusD49?alt=media&token=f978f740-be9e-4bdf-bfe1-394b7619f267",
-      product: "Kalitemu Super",
-      qty: 5,
-      price: displayMoney(Math.floor(70000)),
+      today: "Pembayaran Masuk",
+      title: `${orders?.length} Kali`,
+      persent: "+20%",
+      icon: "profile",
+      bnb: "bnb2",
     },
-  ]);
+    {
+      today: "Jumlah User",
+      title: `${users?.length} User`,
+      persent: "-20%",
+      icon: "heart",
+      bnb: "redtext",
+    },
+    {
+      today: "Jumlah Produk",
+      title: `${product?.length} Barang`,
+      persent: "10%",
+      icon: "cart",
+      bnb: "bnb2",
+    },
+  ];
+
+  const lineChart = {
+    series: [
+      {
+        name: "Pembayaran Masuk",
+        data: orderLine,
+        offsetY: 0,
+      },
+      // {
+      //   name: "Websites",
+      //   data: [30, 90, 40, 140, 290, 290, 340, 230, 400],
+      //   offsetY: 0,
+      // },
+    ],
+
+    options: {
+      chart: {
+        width: "100%",
+        height: 350,
+        type: "area",
+        toolbar: {
+          show: false,
+        },
+      },
+
+      legend: {
+        show: false,
+      },
+
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        curve: "smooth",
+      },
+
+      yaxis: {
+        labels: {
+          style: {
+            fontSize: "14px",
+            fontWeight: 600,
+            colors: ["#8c8c8c"],
+          },
+        },
+      },
+
+      xaxis: {
+        labels: {
+          style: {
+            fontSize: "14px",
+            fontWeight: 600,
+            colors: [
+              "#8c8c8c",
+              "#8c8c8c",
+              "#8c8c8c",
+              "#8c8c8c",
+              "#8c8c8c",
+              "#8c8c8c",
+              "#8c8c8c",
+              "#8c8c8c",
+              "#8c8c8c",
+            ],
+          },
+        },
+        categories: orderLineY,
+      },
+
+      tooltip: {
+        y: {
+          formatter: function (val) {
+            return val;
+          },
+        },
+      },
+    },
+  };
 
   const columns = [
     {
@@ -240,13 +334,56 @@ const Dashboard = () => {
   return (
     <div className="loader">
       <h2>Welcome to admin dashboard</h2>
-      <Table
-        columns={columns}
-        dataSource={orders}
-        pagination={{
-          defaultPageSize: 4,
-        }}
-      />
+      <div className="layout-content">
+        <Row className="rowgap-vbox" gutter={[24, 0]}>
+          {count.map((c, index) => (
+            <Col
+              key={index}
+              xs={24}
+              sm={24}
+              md={12}
+              lg={6}
+              xl={6}
+              className="mb-24"
+            >
+              <Card hoverable bordered={true} className="criclebox ">
+                <div className="number">
+                  <Row align="middle" gutter={[24, 0]}>
+                    <Col>
+                      <span>{c.today}</span>
+                      <Title level={3}>
+                        {/* {c.title} <small className={c.bnb}>{c.persent}</small> */}
+                        {c.title}
+                      </Title>
+                    </Col>
+                    {/* <Col xs={6}>
+                      <div className="icon-box">{c.icon}</div>
+                    </Col> */}
+                  </Row>
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        <ReactApexChart
+          className="full-width"
+          options={lineChart.options}
+          series={lineChart.series}
+          type="area"
+          height={350}
+          width={"100%"}
+        />
+
+        <h2>Daftar Pesanan Masuk</h2>
+        <Table
+          columns={columns}
+          dataSource={ordersDetail}
+          pagination={{
+            defaultPageSize: 4,
+          }}
+        />
+      </div>
     </div>
   );
 };

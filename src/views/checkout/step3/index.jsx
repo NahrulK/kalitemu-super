@@ -167,6 +167,7 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
                       status: paymentIntent?.status,
                     });
 
+                    // Fungsi ini untuk mengurangi stok produk setelah pembayaran
                     basket.map(function (element, index) {
                       db.collection("products")
                         .doc(element.id)
@@ -174,9 +175,6 @@ const Payment = ({ shipping, payment, subtotal, basket, auth }) => {
                           maxQuantity: element.maxQuantity - element.quantity,
                         });
                     });
-                    // db.collection("products")
-                    //   .doc(id)
-                    //   .update({ maxQuantity: maxQuantity });
 
                     displayActionMessage("PEMBAYARAN BERHASIL!!!", "info");
                     // <Redirect to={ACCOUNT} />;
